@@ -3,6 +3,9 @@ const nextConfig = {
   // Compress responses
   compress: true,
 
+  // Prevent Vercel from bundling native Node modules — let the runtime load them
+  serverExternalPackages: ["@libsql/client", "bcryptjs"],
+
   // Optimize images
   images: {
     formats: ["image/avif", "image/webp"],
@@ -22,7 +25,6 @@ const nextConfig = {
       "framer-motion",
       "lucide-react",
       "recharts",
-      "@libsql/client",
     ],
   },
 
