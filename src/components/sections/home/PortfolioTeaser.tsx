@@ -2,6 +2,7 @@
 import { m } from "framer-motion";
 import Link from "next/link";
 import { ExternalLink, ArrowRight } from "lucide-react";
+import Image from "next/image";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -74,11 +75,12 @@ export function PortfolioTeaser() {
                 >
                   {/* Image */}
                   <div className={`relative overflow-hidden ${i === 0 ? "h-60 sm:h-72" : "h-48"}`}>
-                    <img
+                    <Image
                       src={project.image}
                       alt={project.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 50vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#04040a] via-transparent to-transparent" />
 

@@ -3,6 +3,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { m } from "framer-motion";
 import { Zap, Eye, EyeOff, LogIn } from "lucide-react";
+import Link from "next/link";
 import { GradientText } from "@/components/ui/GradientText";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -60,7 +61,7 @@ export default function PortalLoginPage() {
         <Suspense fallback={<div className="glass-strong rounded-2xl p-8 border border-white/10 h-64 animate-pulse" />}>
           <PortalLoginForm />
         </Suspense>
-        <p className="text-center text-gray-700 text-xs mt-4"><a href="/" className="hover:text-gray-500 transition-colors">← Back to website</a></p>
+        <p className="text-center text-gray-700 text-xs mt-4"><Link href="/" className="hover:text-gray-500 transition-colors">← Back to website</Link></p>
       </m.div>
     </div>
   );

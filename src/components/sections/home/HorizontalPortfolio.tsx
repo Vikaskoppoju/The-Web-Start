@@ -3,6 +3,7 @@ import { useRef } from "react";
 import { useScroll, useTransform, m } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
+import Image from "next/image";
 import { GradientText } from "@/components/ui/GradientText";
 import { TiltCard } from "@/components/ui/TiltCard";
 import { Badge } from "@/components/ui/Badge";
@@ -129,11 +130,12 @@ export function HorizontalPortfolio() {
                   >
                     {/* Image */}
                     <div className="relative h-52 overflow-hidden flex-shrink-0">
-                      <img
+                      <Image
                         src={project.image}
                         alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        loading="lazy"
+                        fill
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                        sizes="400px"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#04040a] via-[#04040a]/20 to-transparent" />
                       {/* Overlay on hover */}

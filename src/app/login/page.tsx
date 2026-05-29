@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { m } from "framer-motion";
 import { Zap, Eye, EyeOff, LogIn } from "lucide-react";
+import Link from "next/link";
 import { GradientText } from "@/components/ui/GradientText";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -102,7 +103,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-gray-700 text-xs mt-4">
-          <a href="/" className="hover:text-gray-500 transition-colors">← Back to website</a>
+          <Link href="/" className="hover:text-gray-500 transition-colors">← Back to website</Link>
         </p>
       </m.div>
     </div>
