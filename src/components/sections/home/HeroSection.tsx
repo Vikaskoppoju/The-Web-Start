@@ -227,7 +227,7 @@ export function HeroSection() {
           custom={0.56} variants={fadeUp} initial="hidden" animate="visible"
           className="flex flex-wrap justify-center gap-2.5"
         >
-          {SERVICES.map(({ icon: Icon, label }, i) => (
+          {SERVICES.map(({ icon: Icon, label }) => (
             <m.span
               key={label}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-gray-400 cursor-default"
