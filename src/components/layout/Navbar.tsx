@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown, Zap } from "lucide-react";
+import Image from "next/image";
+import { Menu, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -56,10 +57,13 @@ export function Navbar() {
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-glow-sm transition-shadow duration-300 group-hover:shadow-glow-md"
-                 style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}>
-              <Zap className="w-4 h-4 text-white" />
-            </div>
+            <Image
+              src="/images/logo-mark.svg"
+              alt="The Web Start"
+              width={32}
+              height={32}
+              className="transition-transform duration-300 group-hover:scale-110"
+            />
             <span className="font-display font-bold text-lg text-white">
               The Web <span className="gradient-text">Start</span>
             </span>

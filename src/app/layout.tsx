@@ -8,14 +8,15 @@ const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
   display: "swap",
+  preload: false,
 });
 
 const poppins = Poppins({
   subsets: ["latin"],
   variable: "--font-poppins",
-  weight: ["600", "700", "800", "900"],  // only bold weights needed for display font
+  weight: ["600", "700", "800", "900"],
   display: "swap",
-  preload: true,
+  preload: false,
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://thewebstart.in";
@@ -69,7 +70,6 @@ export const metadata: Metadata = {
     googleBot: { index: true, follow: true },
   },
   icons: {
-    icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
 };

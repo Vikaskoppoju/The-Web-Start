@@ -148,6 +148,14 @@ export function StickyServices() {
     <section ref={containerRef} className="relative" style={{ height: `${services.length * 100}vh` }}>
       <div className="sticky top-0 h-screen flex items-center overflow-hidden">
 
+        {/* Mobile-only header (shown above cards) */}
+        <div className="lg:hidden absolute top-0 left-0 right-0 pt-8 px-5 z-10 pointer-events-none">
+          <span className="text-purple-400 text-sm font-semibold tracking-widest uppercase block mb-2">What We Do</span>
+          <h2 className="font-display font-black text-3xl text-white leading-tight">
+            Every Service <GradientText>You Need</GradientText>
+          </h2>
+        </div>
+
         {/* Left — fixed panel */}
         <div className="absolute left-0 top-0 bottom-0 w-[38%] hidden lg:flex flex-col justify-center px-12 z-10">
           <m.div
@@ -172,8 +180,8 @@ export function StickyServices() {
         </div>
 
         {/* Right — stacked animated cards */}
-        <div className="ml-auto w-full lg:w-[58%] h-screen flex flex-col justify-center px-4 sm:px-8 lg:pr-12 overflow-hidden">
-          <div className="relative h-[420px]">
+        <div className="ml-auto w-full lg:w-[58%] h-screen flex flex-col justify-center px-4 sm:px-8 lg:pr-12 overflow-hidden pt-28 lg:pt-0">
+          <div className="relative h-[380px] sm:h-[420px]">
             {services.map((svc, i) => (
               <ServiceCard
                 key={svc.slug}

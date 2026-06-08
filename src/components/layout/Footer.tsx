@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Zap, Mail, Phone, MapPin } from "lucide-react";
+import Image from "next/image";
+import { Mail, Phone, MapPin } from "lucide-react";
 import { GradientText } from "@/components/ui/GradientText";
 
 const services = [
@@ -34,10 +35,13 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4 group">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center"
-                   style={{ background: "linear-gradient(135deg, #7c3aed, #06b6d4)" }}>
-                <Zap className="w-4 h-4 text-white" />
-              </div>
+              <Image
+                src="/images/logo-mark.svg"
+                alt="The Web Start"
+                width={32}
+                height={32}
+                className="transition-transform duration-300 group-hover:scale-110"
+              />
               <span className="font-display font-bold text-lg text-white">
                 The Web <GradientText>Start</GradientText>
               </span>

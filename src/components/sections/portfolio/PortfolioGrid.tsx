@@ -7,15 +7,49 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
 import { cn } from "@/lib/utils";
 
-const categories = ["All", "Full-Stack", "WordPress", "UI/UX", "Branding", "SEO"];
+const categories = ["All", "WordPress", "Full-Stack", "Branding", "SEO"];
 
 const projects = [
-  { title: "HealthSync Dashboard", client: "HealthSync Inc.", category: "Full-Stack", tags: ["Next.js", "TypeScript", "D3.js"], desc: "Real-time health analytics platform with interactive dashboards.", image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80", slug: "healthsync-dashboard", badgeVariant: "purple" as const },
-  { title: "Luxe E-Commerce", client: "Luxe Fashion", category: "WordPress", tags: ["WooCommerce", "PHP", "Custom Theme"], desc: "Premium fashion store with AR try-on integration.", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&auto=format&fit=crop&q=80", slug: "luxe-ecommerce", badgeVariant: "cyan" as const },
-  { title: "Finova Brand Identity", client: "Finova Capital", category: "Branding", tags: ["Figma", "Identity", "Strategy"], desc: "Complete brand identity for a fintech startup.", image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&auto=format&fit=crop&q=80", slug: "finova-branding", badgeVariant: "green" as const },
-  { title: "EdPrime LMS", client: "EdPrime", category: "Full-Stack", tags: ["React", "Node.js", "PostgreSQL"], desc: "Learning management system for 10k+ students.", image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=80", slug: "edprime-lms", badgeVariant: "purple" as const },
-  { title: "Bloom Wellness", client: "Bloom Studio", category: "UI/UX", tags: ["Figma", "Prototyping", "Research"], desc: "Wellness app redesign increasing retention by 45%.", image: "https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=800&auto=format&fit=crop&q=80", slug: "bloom-wellness", badgeVariant: "orange" as const },
-  { title: "TechGrow SEO", client: "TechGrow SaaS", category: "SEO", tags: ["Technical SEO", "Content", "Link Building"], desc: "400% organic traffic growth in 6 months.", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80", slug: "techgrow-seo", badgeVariant: "green" as const },
+  {
+    title: "Portfolio Website",
+    client: "Client — Branding & Web",
+    category: "WordPress",
+    tags: ["WordPress", "Domain", "Hosting", "SEO", "Branding"],
+    desc: "A professional portfolio built with WordPress, optimized for SEO and branding, with a custom domain and reliable hosting setup.",
+    image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&auto=format&fit=crop&q=80",
+    slug: "portfolio-website",
+    badgeVariant: "cyan" as const,
+  },
+  {
+    title: "Portfolio Website",
+    client: "Client — Full Digital Presence",
+    category: "WordPress",
+    tags: ["WordPress", "Domain", "Hosting", "SEO", "Branding", "Social Media"],
+    desc: "A professional portfolio built with WordPress, featuring SEO optimization, strong branding, custom domain, reliable hosting, and integrated social media presence.",
+    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=800&auto=format&fit=crop&q=80",
+    slug: "portfolio-website-social",
+    badgeVariant: "purple" as const,
+  },
+  {
+    title: "College Website",
+    client: "Educational Institution",
+    category: "Full-Stack",
+    tags: ["HTML", "CSS", "JavaScript", "jQuery", "Bootstrap"],
+    desc: "A responsive college website with clean UI, smooth navigation, and informative content sections built with HTML, CSS, JavaScript, jQuery, and Bootstrap.",
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80",
+    slug: "college-website",
+    badgeVariant: "green" as const,
+  },
+  {
+    title: "Student ID Card Collector",
+    client: "Educational Institution",
+    category: "Full-Stack",
+    tags: ["Web App", "Database", "Forms", "ID Cards"],
+    desc: "A web application to collect and manage student details for ID card generation, with a clean form interface and data management dashboard.",
+    image: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=800&auto=format&fit=crop&q=80",
+    slug: "student-id-card",
+    badgeVariant: "orange" as const,
+  },
 ];
 
 export function PortfolioGrid() {
