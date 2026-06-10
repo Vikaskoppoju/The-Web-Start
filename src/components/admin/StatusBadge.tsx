@@ -16,6 +16,10 @@ const statusConfig: Record<string, { label: string; class: string }> = {
   partial:   { label: "Partial",   class: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" },
   paid:      { label: "Paid",      class: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
   overdue:   { label: "Overdue",   class: "bg-red-500/15 text-red-400 border-red-500/30" },
+  // Quotation statuses
+  accepted:  { label: "Accepted",  class: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  rejected:  { label: "Rejected",  class: "bg-red-500/15 text-red-400 border-red-500/30" },
+  expired:   { label: "Expired",   class: "bg-orange-500/15 text-orange-400 border-orange-500/30" },
   // Payment
   pending:   { label: "Pending",   class: "bg-yellow-500/15 text-yellow-400 border-yellow-500/30" },
   failed:    { label: "Failed",    class: "bg-red-500/15 text-red-400 border-red-500/30" },

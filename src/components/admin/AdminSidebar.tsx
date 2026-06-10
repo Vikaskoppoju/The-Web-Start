@@ -6,7 +6,7 @@ import { m, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, FolderKanban, FileText, CreditCard,
   MessageSquare, BookOpen, Image, Star, Settings, LogOut,
-  Zap, ChevronRight, Bell, Menu, X, Briefcase,
+  Zap, ChevronRight, Bell, Menu, X, Briefcase, ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GradientText } from "@/components/ui/GradientText";
@@ -16,6 +16,7 @@ const navItems = [
   { label: "Clients",      href: "/admin/clients",      icon: Users },
   { label: "Projects",     href: "/admin/projects",     icon: FolderKanban },
   { label: "Invoices",     href: "/admin/invoices",     icon: FileText },
+  { label: "Quotations",   href: "/admin/quotations",   icon: ClipboardList },
   { label: "Payments",     href: "/admin/payments",     icon: CreditCard },
   { label: "Submissions",  href: "/admin/submissions",  icon: MessageSquare },
   { divider: true },
