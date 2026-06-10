@@ -576,9 +576,9 @@ export function QuotationsManager() {
     finally { setSaving(false); }
   };
 
-  const handleStatus = async (id: number, status: QuotationStatus) => {
+  const handleStatus = async (id: number, status: QuotationStatus, sendEmail = false) => {
     await fetch(`/api/admin/quotations/${id}`, {
-      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }),
+      method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status, ...(sendEmail ? { send_email: true } : {}) }),
     });
     await load();
   };
@@ -750,8 +750,8 @@ export function QuotationsManager() {
                           <Edit2 className="w-4 h-4" />
                         </button>
                         {q.status === "draft" && (
-                          <button onClick={() => handleStatus(q.id, "sent")}
-                            title="Mark as Sent" className="p-1.5 text-gray-500 hover:text-blue-400 transition-colors rounded-lg hover:bg-blue-500/10">
+                          <button onClick={() => handleStatus(q.id, "sent", true)}
+                            title="Send quotation" className="p-1.5 text-gray-500 hover:text-blue-400 transition-colors rounded-lg hover:bg-blue-500/10">
                             <Send className="w-4 h-4" />
                           </button>
                         )}

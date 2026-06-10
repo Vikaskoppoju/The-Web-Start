@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { getDB, ok, err } from "@/lib/api-helpers";
 import { getQuotationById, updateQuotation, updateQuotationStatus, deleteQuotation } from "@/lib/db-quotations";
+import { sendQuotationEmail } from "@/lib/resend";
 import { z } from "zod";
 
-const statusSchema = z.object({ status: z.enum(["draft", "sent", "accepted", "rejected", "expired"]) });
+const statusSchema = z.object({ status: z.enum(["draft", "sent", "accepted", "rejected", "expired"]), send_email: z.boolean().optional() });
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -21,8 +22,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // Status-only update
     const statusParsed = statusSchema.safeParse(body);
-    if (statusParsed.success && Object.keys(body).length === 1) {
-      await updateQuotationStatus(getDB(), Number(id), statusParsed.data.status);
+    if (statusParsed.success && Object.keys(body).every(key => key === "status" || key === "send_email")) {
+      const db = getDB();
+      await updateQuotationStatus(db, Number(id), statusParsed.data.status);
+
+      if (statusParsed.data.status === "sent" && statusParsed.data.send_email) {
+        const quote = await getQuotationById(db, Number(id));
+        if (quote) {
+          try {
+            await sendQuotationEmail(quote);
+          } catch {
+            // email failures should not block status update
+          }
+        }
+      }
+
       return ok({ message: "Status updated" });
     }
 

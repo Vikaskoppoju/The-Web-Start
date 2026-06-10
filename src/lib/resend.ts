@@ -1,6 +1,7 @@
 import { Resend } from "resend";
 import type { ContactFormData, InquiryFormData } from "@/types/api";
 import type { InvoiceWithClient } from "@/types/dashboard";
+import type { QuotationWithItems } from "@/types/quotation";
 
 function getResend() {
   const key = process.env.RESEND_API_KEY;
@@ -55,6 +56,40 @@ export async function sendInvoiceEmail(invoice: InvoiceWithClient) {
           View Invoice
         </a>
         <p style="color:#666;font-size:12px;margin-top:24px">The Web Start · info@thewebstart.in</p>
+      </div>
+    `,
+  });
+}
+
+export async function sendQuotationEmail(quote: QuotationWithItems) {
+  if (!quote.client_email) {
+    throw new Error("Quotation client email is not set");
+  }
+
+  const resend = getResend();
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://thewebstart.in";
+
+  await resend.emails.send({
+    from,
+    to: quote.client_email,
+    subject: `Quotation ${quote.quote_no} from The Web Start`,
+    html: `
+      <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+        <h1 style="color:#7c3aed">The Web Start</h1>
+        <h2>Quotation ${quote.quote_no}</h2>
+        <p>Dear ${quote.client_name},</p>
+        <p>Please review your quotation for ${quote.currency} ${quote.total.toLocaleString()}.</p>
+        <table style="width:100%;border-collapse:collapse">
+          <tr><td><strong>Quote No:</strong></td><td>${quote.quote_no}</td></tr>
+          <tr><td><strong>Valid Until:</strong></td><td>${quote.valid_until ?? "N/A"}</td></tr>
+          <tr><td><strong>Total:</strong></td><td><strong>${quote.currency} ${quote.total.toLocaleString()}</strong></td></tr>
+        </table>
+        ${quote.notes ? `<p>${quote.notes}</p>` : ""}
+        <p>Please log in to your client portal to review and accept the quotation.</p>
+        <a href="${siteUrl}/portal/login" style="background:#7c3aed;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:16px">
+          View Quotation
+        </a>
+        <p style="color:#666;font-size:12px;margin-top:24px">The Web Start · ${from}</p>
       </div>
     `,
   });
