@@ -44,6 +44,9 @@ export async function POST(request: NextRequest) {
     const parsed = schema.safeParse(body);
     if (!parsed.success) return err(parsed.error.issues[0]?.message ?? "Invalid input", 400);
     const result = await createQuotation(getDB(), parsed.data);
-    return ok(result, 201);
-  } catch { return err("Failed to create quotation", 500); }
+    return ok({ message: "Quotation created", id: result.id, quoteNo: result.quoteNo }, 201);
+  } catch (error) {
+    console.error("Quotation creation failed:", error);
+    return err("Failed to create quotation", 500);
+  }
 }

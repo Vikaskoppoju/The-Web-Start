@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import {
   Plus, Search, Eye, Edit2, Trash2, FileText, Send,
@@ -10,6 +10,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Input, Select } from "@/components/ui/Input";
 import { StatusBadge } from "./StatusBadge";
+import { pdf } from "@react-pdf/renderer";
+import { QuotationPdfDocument } from "@/components/admin/QuotationPdfDocument";
 import type { Quotation, QuotationWithItems, CreateQuotationItem, QuotationStatus } from "@/types/quotation";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -41,59 +43,109 @@ function calcTotals(items: CreateQuotationItem[], discountType: string, discount
   return { subtotal, discountAmount, taxAmount, total: taxable + taxAmount };
 }
 
+function LogoMark(props: { className?: string }) {
+  return (
+    <svg viewBox="0 0 375 375" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+      <path fill="#7c3aed" d="M374.714844 107.667969C374.71875 107.351562 374.6875 107.039062 374.628906 106.730469C374.566406 106.417969 374.476562 106.117188 374.359375 105.828125C374.238281 105.535156 374.089844 105.257812 373.917969 104.996094C373.742188 104.734375 373.542969 104.488281 373.320312 104.265625C373.097656 104.042969 372.855469 103.84375 372.59375 103.667969C372.332031 103.492188 372.054688 103.347656 371.761719 103.226562C371.472656 103.105469 371.171875 103.015625 370.859375 102.953125C370.550781 102.894531 370.238281 102.863281 369.921875 102.863281L272.894531 102.863281L272.894531 7.605469L272.882812 7.605469C272.886719 7.289062 272.855469 6.976562 272.796875 6.667969C272.738281 6.355469 272.648438 6.054688 272.527344 5.765625C272.410156 5.472656 272.261719 5.195312 272.089844 4.933594C271.914062 4.667969 271.714844 4.425781 271.492188 4.203125C271.269531 3.980469 271.027344 3.78125 270.765625 3.605469C270.503906 3.429688 270.226562 3.28125 269.933594 3.160156C269.640625 3.042969 269.339844 2.949219 269.03125 2.890625C268.722656 2.832031 268.410156 2.800781 268.09375 2.800781L163.183594 2.800781C162.546875 2.800781 161.9375 2.925781 161.347656 3.167969C160.761719 3.410156 160.242188 3.757812 159.792969 4.207031L106.53125 57.386719C106.070312 57.710938 105.679688 58.101562 105.355469 58.5625L3.535156 160.222656C2.847656 160.660156 2.304688 161.238281 1.914062 161.953125C1.519531 162.671875 1.324219 163.4375 1.324219 164.253906L1.324219 267.007812C1.324219 267.324219 1.355469 267.636719 1.414062 267.945312C1.476562 268.253906 1.566406 268.554688 1.6875 268.847656C1.808594 269.136719 1.957031 269.414062 2.132812 269.675781C2.308594 269.9375 2.507812 270.179688 2.730469 270.402344C2.953125 270.628906 3.195312 270.824219 3.457031 271C3.71875 271.175781 3.996094 271.324219 4.289062 271.445312C4.578125 271.566406 4.878906 271.65625 5.1875 271.71875C5.496094 271.777344 5.808594 271.8 6.121094 271.800781L107.234375 271.800781L107.234375 368.433594C107.234375 368.746094 107.265625 369.058594 107.324219 369.367188C107.386719 369.675781 107.476562 369.976562 107.597656 370.269531C107.714844 370.5625 107.863281 370.839844 108.035156 371.101562C108.210938 371.367188 108.410156 371.609375 108.632812 371.832031C108.855469 372.054688 109.097656 372.253906 109.359375 372.429688C109.621094 372.605469 109.898438 372.753906 110.191406 372.875C110.484375 372.996094 110.785156 373.089844 111.09375 373.148438C111.402344 373.207031 111.714844 373.238281 112.03125 373.238281L217.121094 373.238281C217.757812 373.238281 218.367188 373.113281 218.957031 372.871094C219.542969 372.628906 220.0625 372.28125 220.511719 371.832031L273.773438 318.652344C274.234375 318.328125 274.625 317.9375 274.949219 317.476562L376.769531 215.816406C377.457031 215.378906 378 214.800781 378.390625 214.085938C378.785156 213.367188 378.980469 212.601562 378.980469 211.785156L378.980469 108.03125C378.980469 107.714844 378.949219 107.402344 378.890625 107.09375C378.828125 106.785156 378.738281 106.484375 378.617188 106.191406C378.496094 105.902344 378.347656 105.625 378.175781 105.363281C378.003906 105.097656 377.804688 104.855469 377.582031 104.632812C377.359375 104.410156 377.117188 104.210938 376.855469 104.035156C376.59375 103.859375 376.316406 103.710938 376.023438 103.589844C375.730469 103.472656 375.429688 103.378906 375.121094 103.320312C374.8125 103.261719 374.5 103.230469 374.183594 103.230469L374.183594 103.230469L374.714844 107.667969Z" />
+      <path fill="#35ff45" d="M114.078125 66.121094L207.640625 66.121094L207.640625 159.457031L114.078125 159.457031Z" />
+      <path fill="#35ff45" d="M114.078125 271.804688L207.640625 271.804688L207.640625 365.195312L114.078125 365.195312Z" />
+      <path fill="#06b6d4" d="M104.472656 159.453125L17.898438 159.453125L104.472656 73.011719Z" />
+      <path fill="#06b6d4" d="M263.292969 105.703125L217.246094 152.527344L217.246094 64.542969L263.292969 19.09375Z" />
+      <path fill="#06b6d4" d="M305.410156 271.804688L217.246094 358.542969L217.246094 271.804688Z" />
+      <path fill="#06b6d4" d="M313.710938 159.453125L223.898438 159.453125L270.105469 112.46875L358.675781 112.46875Z" />
+      <path fill="#06b6d4" d="M165.171875 12.40625L256.394531 12.40625L211.703125 56.519531L120.992188 56.519531Z" />
+      <path fill="#06b6d4" d="M320.5625 256.902344L320.5625 166.183594L365.113281 119.628906L365.113281 213.074219Z" />
+      <path fill="#ffffff" d="M114.078125 169.058594L207.640625 169.058594L207.640625 262.203125L114.078125 262.203125Z" />
+      <path fill="#35ff45" d="M217.246094 169.058594L310.792969 169.058594L310.792969 262.203125L217.246094 262.203125Z" />
+      <path fill="#35ff45" d="M10.925781 169.058594L104.472656 169.058594L104.472656 262.203125L10.925781 262.203125Z" />
+    </svg>
+  );
+}
+
 // ── Print Preview ──────────────────────────────────────────────────────────────
 function PrintPreview({ quote }: { quote: QuotationWithItems }) {
-  const { subtotal, discountAmount, taxAmount, total } = calcTotals(
-    quote.items, quote.discount_type, quote.discount_value, quote.tax_percent
-  );
+  const items = quote.items ?? [];
+  const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [previewingPdf, setPreviewingPdf] = useState(false);
 
-  const handlePrint = () => {
-    const el = document.getElementById("quote-print-area");
-    if (!el) return;
-    const win = window.open("", "_blank");
-    if (!win) return;
-    win.document.write(`<!DOCTYPE html><html><head>
-      <meta charset="utf-8"/>
-      <title>${quote.quote_no}</title>
-      <style>
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:system-ui,sans-serif;font-size:12px;color:#1a1a2e;background:#fff;}
-        ${el.getAttribute("data-print-style") ?? ""}
-      </style>
-    </head><body>${el.innerHTML}</body></html>`);
-    win.document.close();
-    win.print();
+  const subtotal = quote.subtotal;
+  const discountAmount = quote.discount_amount;
+  const taxAmount = quote.tax_amount;
+  const total = quote.total;
+
+  const handleDownloadPdf = async () => {
+    setGeneratingPdf(true);
+
+    try {
+      const blob = await pdf(<QuotationPdfDocument quote={quote} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${quote.quote_no ?? "quotation"}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (error) {
+      console.error("PDF export failed", error);
+      alert("PDF export failed. Please try again.");
+    } finally {
+      setGeneratingPdf(false);
+    }
+  };
+
+  const handlePreviewPdf = async () => {
+    setPreviewingPdf(true);
+
+    try {
+      const blob = await pdf(<QuotationPdfDocument quote={quote} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, "_blank");
+      if (!win) {
+        alert("Please allow pop-ups to preview the PDF.");
+        URL.revokeObjectURL(url);
+        return;
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (error) {
+      console.error("PDF preview failed", error);
+      alert("PDF preview failed. Please try again.");
+    } finally {
+      setPreviewingPdf(false);
+    }
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-white font-semibold">Print Preview</h3>
-        <button onClick={handlePrint}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors">
-          <Printer className="w-4 h-4" /> Print / Save PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={handlePreviewPdf}
+            disabled={previewingPdf}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 disabled:bg-slate-500 text-white text-sm rounded-lg transition-colors">
+            <Eye className="w-4 h-4" /> {previewingPdf ? "Opening preview..." : "Preview PDF"}
+          </button>
+          <button onClick={handleDownloadPdf}
+            disabled={generatingPdf}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-sm rounded-lg transition-colors">
+            <Printer className="w-4 h-4" /> {generatingPdf ? "Generating PDF..." : "Download PDF"}
+          </button>
+        </div>
       </div>
 
       {/* Printable area */}
       <div id="quote-print-area"
-        data-print-style={`
-          .print-page{padding:32px;max-width:860px;margin:auto;}
-          table{width:100%;border-collapse:collapse;}
-          th{background:#f0f0f7;padding:8px 10px;text-align:left;font-size:11px;color:#444;border-bottom:2px solid #e0e0f0;}
-          td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:top;}
-          .amount-cell{text-align:right;font-weight:600;}
-          .totals td{border:none;padding:4px 10px;}
-          .grand-total td{background:#1a1a2e;color:#fff;border-radius:4px;padding:10px;}
-        `}
         className="bg-white rounded-xl overflow-hidden text-gray-900 text-sm print-page">
         {/* Header */}
         <div className="p-8 pb-6"
           style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)" }}>
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="text-2xl font-bold text-white mb-1">THE WEB START</div>
-              <div className="text-purple-300 text-xs">thewebstart.in · info@thewebstart.in</div>
+          <div className="flex justify-between items-start gap-4">
+            <div className="flex items-center gap-4">
+              <LogoMark className="h-12 w-12" />
+              <div>
+                <div className="text-2xl font-bold text-white mb-1">THE WEB START</div>
+                <div className="text-purple-300 text-xs">thewebstart.in · info@thewebstart.in</div>
+              </div>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold text-white mb-1">{quote.quote_no}</div>
@@ -143,7 +195,7 @@ function PrintPreview({ quote }: { quote: QuotationWithItems }) {
               </tr>
             </thead>
             <tbody>
-              {quote.items.map((item, i) => (
+              {items.length ? items.map((item, i) => (
                 <tr key={item.id ?? i} className={cn(i % 2 === 1 && "bg-gray-50/50")}>
                   <td className="py-3 px-3 text-gray-400 text-xs align-top">{i + 1}</td>
                   <td className="py-3 px-3">
@@ -164,7 +216,11 @@ function PrintPreview({ quote }: { quote: QuotationWithItems }) {
                   <td className="py-3 px-3 text-right text-gray-500 text-xs align-top">{item.tax_percent > 0 ? `${item.tax_percent}%` : "—"}</td>
                   <td className="py-3 px-3 text-right font-semibold text-gray-900 text-sm align-top">{fmt(item.amount, quote.currency)}</td>
                 </tr>
-              ))}
+              )) : (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-sm text-gray-500">No line items found for this quotation.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -574,7 +630,18 @@ export function QuotationsManager() {
   const loadDetail = async (id: number) => {
     const res = await fetch(`/api/admin/quotations/${id}`);
     const data = await res.json();
-    return data.data as QuotationWithItems;
+    const quote = data.data as QuotationWithItems;
+    return {
+      ...quote,
+      items: (quote.items ?? []).map((item) => ({
+        ...item,
+        quantity: Number(item.quantity),
+        unit_price: Number(item.unit_price),
+        discount_percent: Number(item.discount_percent),
+        tax_percent: Number(item.tax_percent),
+        amount: Number(item.amount),
+      })),
+    } as QuotationWithItems;
   };
 
   const handleCreate = async (form: FormData) => {
@@ -584,7 +651,8 @@ export function QuotationsManager() {
       const res = await fetch("/api/admin/quotations", {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
-      if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Failed"); }
+      const d = await res.json();
+      if (!res.ok || !d.success) { throw new Error(d.error ?? "Failed to create quotation"); }
       await load();
       setView("list");
     } catch (e) { setError((e as Error).message); }

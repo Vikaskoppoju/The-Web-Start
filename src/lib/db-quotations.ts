@@ -1,5 +1,5 @@
 import type { TursoDb as D1Database } from "./turso";
-import type { Quotation, QuotationWithItems, CreateQuotationPayload } from "@/types/quotation";
+import type { Quotation, QuotationWithItems, QuotationItem, CreateQuotationPayload } from "@/types/quotation";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -34,13 +34,26 @@ export async function getAllQuotations(db: D1Database): Promise<Quotation[]> {
   return results ?? [];
 }
 
+export async function getQuotationItems(db: D1Database, quotationId: number): Promise<QuotationItem[]> {
+  const { results } = await db
+    .prepare("SELECT * FROM quotation_items WHERE quotation_id=? ORDER BY sort_order")
+    .bind(quotationId).all<QuotationItem>();
+  const items = results ?? [];
+  return items.map((item) => ({
+    ...item,
+    quantity: Number(item.quantity),
+    unit_price: Number(item.unit_price),
+    discount_percent: Number(item.discount_percent),
+    tax_percent: Number(item.tax_percent),
+    amount: Number(item.amount),
+  }));
+}
+
 export async function getQuotationById(db: D1Database, id: number): Promise<QuotationWithItems | null> {
   const quote = await db.prepare("SELECT * FROM quotations WHERE id=?").bind(id).first<Quotation>();
   if (!quote) return null;
-  const { results: items } = await db
-    .prepare("SELECT * FROM quotation_items WHERE quotation_id=? ORDER BY sort_order")
-    .bind(id).all();
-  return { ...quote, items: (items ?? []) as QuotationWithItems["items"] };
+  const items = await getQuotationItems(db, id);
+  return { ...quote, items };
 }
 
 export async function createQuotation(db: D1Database, data: CreateQuotationPayload) {
@@ -65,7 +78,7 @@ export async function createQuotation(db: D1Database, data: CreateQuotationPaylo
     data.terms ?? null, data.notes ?? null,
   ).run();
 
-  const id = (result as unknown as { lastInsertRowid: number }).lastInsertRowid;
+  const id = Number((result as unknown as { meta: { lastInsertRowid: number } }).meta.lastInsertRowid);
 
   for (let i = 0; i < data.items.length; i++) {
     const item = data.items[i];
