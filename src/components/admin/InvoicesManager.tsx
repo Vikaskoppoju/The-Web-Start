@@ -7,7 +7,7 @@ import { StatusBadge } from "./StatusBadge";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
-import type { InvoiceWithClient, InvoiceItem } from "@/types/dashboard";
+import type { InvoiceWithClient, InvoiceItem, Payment } from "@/types/dashboard";
 
 const PAYMENT_METHODS = [
   { value: "bank_transfer", label: "Bank Transfer" },
@@ -25,7 +25,7 @@ export function InvoicesManager() {
   const [clients, setClients] = useState<{ id: number; name: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [viewInvoice, setViewInvoice] = useState<(InvoiceWithClient & { items: InvoiceItem[] }) | null>(null);
+  const [viewInvoice, setViewInvoice] = useState<(InvoiceWithClient & { items: InvoiceItem[]; payments?: Payment[] }) | null>(null);
   const [showPayment, setShowPayment] = useState<InvoiceWithClient | null>(null);
   const [deleting, setDeleting] = useState<InvoiceWithClient | null>(null);
   const [saving, setSaving] = useState(false);
@@ -212,7 +212,7 @@ export function InvoicesManager() {
                       <div className="text-purple-600 font-mono font-bold">{viewInvoice.invoice_no}</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-8 mb-8">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     <div>
                       <div className="text-xs font-semibold text-gray-400 uppercase mb-1">Bill To</div>
                       <div className="font-semibold text-gray-800">{viewInvoice.client_name}</div>
@@ -222,7 +222,7 @@ export function InvoicesManager() {
                     <div className="text-right">
                       <div className="text-sm text-gray-600"><span className="font-medium">Issue Date:</span> {viewInvoice.issue_date}</div>
                       <div className="text-sm text-gray-600"><span className="font-medium">Due Date:</span> {viewInvoice.due_date}</div>
-                      <div className="mt-2"><span className={`px-2 py-1 rounded text-xs font-bold uppercase ${viewInvoice.status === "paid" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>{viewInvoice.status}</span></div>
+                      <div className="mt-2"><span className={`px-2 py-1 rounded text-xs font-bold uppercase ${viewInvoice.status === "paid" ? "bg-green-100 text-green-700" : viewInvoice.status === "partial" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-700"}`}>{viewInvoice.status}</span></div>
                     </div>
                   </div>
                   <table className="w-full mb-6">
@@ -234,15 +234,46 @@ export function InvoicesManager() {
                     </tbody>
                   </table>
                   <div className="flex justify-end">
-                    <div className="w-56 space-y-1">
-                      <div className="flex justify-between text-sm"><span className="text-gray-500">Subtotal</span><span>₹{viewInvoice.subtotal.toLocaleString()}</span></div>
-                      {viewInvoice.discount > 0 && <div className="flex justify-between text-sm"><span className="text-gray-500">Discount</span><span>-₹{viewInvoice.discount.toLocaleString()}</span></div>}
-                      <div className="flex justify-between text-sm"><span className="text-gray-500">Tax ({viewInvoice.tax_rate}%)</span><span>₹{viewInvoice.tax_amount.toLocaleString()}</span></div>
-                      <div className="flex justify-between font-bold text-lg pt-2 border-t border-gray-200"><span>Total</span><span className="text-purple-700">₹{viewInvoice.total.toLocaleString()}</span></div>
-                      {viewInvoice.amount_paid > 0 && <div className="flex justify-between text-sm text-emerald-600"><span>Paid</span><span>₹{viewInvoice.amount_paid.toLocaleString()}</span></div>}
+                    <div className="w-full max-w-md space-y-3 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+                      <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
+                        <div>Total due</div><div className="font-semibold text-gray-900">₹{viewInvoice.total.toLocaleString()}</div>
+                        <div>Paid</div><div className="font-semibold text-emerald-600">₹{viewInvoice.amount_paid.toLocaleString()}</div>
+                        <div>Status</div><div className="font-semibold text-gray-900 capitalize">{viewInvoice.status}</div>
+                      </div>
+                      {viewInvoice.total - viewInvoice.amount_paid > 0 && (
+                        <div className="text-sm text-red-600">Balance: ₹{(viewInvoice.total - viewInvoice.amount_paid).toLocaleString()}</div>
+                      )}
+                      {viewInvoice.payments?.length ? (
+                        <div className="text-sm text-gray-600">Payments recorded: {viewInvoice.payments.length}</div>
+                      ) : (
+                        <div className="text-sm text-gray-600">No payments recorded yet.</div>
+                      )}
                     </div>
                   </div>
                   {viewInvoice.notes && <p className="mt-6 text-sm text-gray-500 border-t pt-4">{viewInvoice.notes}</p>}
+                  <div className="mt-8">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-4">Payment history</h3>
+                    <div className="space-y-3">
+                      {viewInvoice.payments?.length ? viewInvoice.payments.map(payment => (
+                        <div key={payment.id} className="glass rounded-2xl border border-gray-200 p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <div className="text-sm font-semibold text-gray-900 capitalize">{payment.method.replace(/_/g, " ")}</div>
+                              <div className="text-xs text-gray-500">{new Date(payment.payment_date).toLocaleDateString()}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm text-gray-500">Status: <span className="font-semibold text-gray-900 capitalize">{payment.status}</span></div>
+                              <div className="text-lg font-semibold text-emerald-600">{payment.currency} {payment.amount.toLocaleString()}</div>
+                            </div>
+                          </div>
+                          {payment.reference_no && <div className="mt-3 text-xs text-gray-500">Reference: {payment.reference_no}</div>}
+                          {payment.notes && <div className="mt-1 text-xs text-gray-500">{payment.notes}</div>}
+                        </div>
+                      )) : (
+                        <div className="text-sm text-gray-500">No payments have been recorded for this invoice yet.</div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex gap-3 p-4 bg-gray-50 border-t">
                   <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 transition-colors"><Printer className="w-4 h-4" />Print / Save PDF</button>

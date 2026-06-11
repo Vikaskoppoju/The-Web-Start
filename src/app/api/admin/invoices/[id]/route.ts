@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getDB, ok, err } from "@/lib/api-helpers";
-import { getInvoiceById, getInvoiceItems, updateInvoiceStatus, deleteInvoice } from "@/lib/db-dashboard";
+import { getInvoiceById, getInvoiceItems, getInvoicePayments, updateInvoiceStatus, deleteInvoice } from "@/lib/db-dashboard";
 import { createNotification } from "@/lib/db-dashboard";
 import { sendInvoiceEmail } from "@/lib/resend";
 
@@ -12,7 +12,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const invoice = await getInvoiceById(db, Number(id));
     if (!invoice) return err("Not found", 404);
     const items = await getInvoiceItems(db, Number(id));
-    return ok({ ...invoice, items });
+    const payments = await getInvoicePayments(db, Number(id));
+    return ok({ ...invoice, items, payments });
   } catch { return err("Failed", 500); }
 }
 

@@ -1,7 +1,7 @@
 import type { TursoDb as D1Database } from "./turso";
 import type {
   Client, ClientPublic, Project, ProjectWithClient, Milestone,
-  ProjectFile, InvoiceItem, InvoiceWithClient,
+  ProjectFile, InvoiceItem, InvoiceWithClient, Payment,
   PaymentWithDetails, Notification, AdminStats, ClientStats,
 } from "@/types/dashboard";
 
@@ -176,6 +176,13 @@ export async function getInvoiceItems(db: D1Database, invoiceId: number): Promis
   const { results } = await db
     .prepare("SELECT * FROM invoice_items WHERE invoice_id=? ORDER BY sort_order ASC")
     .bind(invoiceId).all<InvoiceItem>();
+  return results ?? [];
+}
+
+export async function getInvoicePayments(db: D1Database, invoiceId: number): Promise<Payment[]> {
+  const { results } = await db
+    .prepare("SELECT * FROM payments WHERE invoice_id=? ORDER BY payment_date DESC")
+    .bind(invoiceId).all<Payment>();
   return results ?? [];
 }
 

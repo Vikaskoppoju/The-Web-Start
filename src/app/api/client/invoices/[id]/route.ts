@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
 import { getDB, ok, err, getClientId } from "@/lib/api-helpers";
-import { getInvoiceById, getInvoiceItems, updateInvoiceStatus } from "@/lib/db-dashboard";
-
+import { getInvoiceById, getInvoiceItems, getInvoicePayments, updateInvoiceStatus } from "@/lib/db-dashboard";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -14,6 +13,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       await updateInvoiceStatus(db, Number(id), "viewed");
     }
     const items = await getInvoiceItems(db, Number(id));
-    return ok({ ...invoice, items });
+    const payments = await getInvoicePayments(db, Number(id));
+    return ok({ ...invoice, items, payments });
   } catch { return err("Failed", 500); }
 }

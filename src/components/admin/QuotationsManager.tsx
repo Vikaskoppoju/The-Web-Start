@@ -8,6 +8,7 @@ import {
   ChevronUp, X, Save, Printer, ArrowRight, Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Input, Select } from "@/components/ui/Input";
 import { StatusBadge } from "./StatusBadge";
 import type { Quotation, QuotationWithItems, CreateQuotationItem, QuotationStatus } from "@/types/quotation";
 
@@ -311,6 +312,7 @@ function ItemRow({
 
 // ── Form ───────────────────────────────────────────────────────────────────────
 interface FormData {
+  client_id: string;
   client_name: string;
   client_email: string;
   client_phone: string;
@@ -328,7 +330,7 @@ interface FormData {
 }
 
 const defaultForm = (): FormData => ({
-  client_name: "", client_email: "", client_phone: "", client_company: "", client_address: "",
+  client_id: "", client_name: "", client_email: "", client_phone: "", client_company: "", client_address: "",
   title: "Quotation", valid_until: inDays(30), currency: "INR",
   discount_type: "percent", discount_value: 0, tax_percent: 18,
   terms: "1. 50% advance payment required to start the project.\n2. Balance payment due on project completion.\n3. Quotation valid for 30 days from the date of issue.\n4. Any additional requirements will be quoted separately.",
@@ -338,6 +340,7 @@ const defaultForm = (): FormData => ({
 
 function toForm(q: QuotationWithItems): FormData {
   return {
+    client_id: q.client_id ? String(q.client_id) : "",
     client_name: q.client_name, client_email: q.client_email ?? "",
     client_phone: q.client_phone ?? "", client_company: q.client_company ?? "",
     client_address: q.client_address ?? "", title: q.title, valid_until: q.valid_until ?? "",
@@ -348,12 +351,13 @@ function toForm(q: QuotationWithItems): FormData {
 }
 
 function QuotationForm({
-  initial, onSave, onCancel, saving,
+  initial, onSave, onCancel, saving, clients,
 }: {
   initial?: QuotationWithItems;
   onSave: (data: FormData) => void;
   onCancel: () => void;
   saving: boolean;
+  clients: { id: number; name: string; email: string; company?: string; phone?: string; address?: string }[];
 }) {
   const [form, setForm] = useState<FormData>(initial ? toForm(initial) : defaultForm());
   const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
@@ -382,6 +386,25 @@ function QuotationForm({
           <FileText className="w-4 h-4 text-purple-400" /> Client & Quotation Details
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <label className="text-xs text-gray-500 block mb-1">Existing Client</label>
+            <Select label="" options={[
+              { value: "", label: "Select existing client..." },
+              ...clients.map(c => ({ value: String(c.id), label: c.name })),
+            ]} value={form.client_id} onChange={e => {
+              const clientId = e.target.value;
+              const client = clients.find(c => String(c.id) === clientId);
+              set("client_id", clientId);
+              if (client) {
+                set("client_name", client.name);
+                set("client_email", client.email);
+                set("client_company", client.company ?? "");
+                set("client_phone", client.phone ?? "");
+                set("client_address", client.address ?? "");
+              }
+            }}
+            />
+          </div>
           {([
             ["client_name", "Client Name *", "text", "e.g. Acme Corp"],
             ["client_company", "Company", "text", "Company name"],
@@ -524,6 +547,7 @@ type View = "list" | "create" | "edit" | "preview";
 
 export function QuotationsManager() {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [clients, setClients] = useState<{ id: number; name: string; email: string; company?: string; phone?: string; address?: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<View>("list");
   const [selected, setSelected] = useState<QuotationWithItems | null>(null);
@@ -535,9 +559,13 @@ export function QuotationsManager() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/quotations");
-      const data = await res.json();
-      setQuotations(data.data ?? []);
+      const [quotRes, clientRes] = await Promise.all([
+        fetch("/api/admin/quotations"),
+        fetch("/api/admin/clients"),
+      ]);
+      const [quotData, clientData] = await Promise.all([quotRes.json(), clientRes.json()]);
+      setQuotations(quotData.data ?? []);
+      setClients(clientData.data ?? []);
     } finally { setLoading(false); }
   }, []);
 
@@ -552,8 +580,9 @@ export function QuotationsManager() {
   const handleCreate = async (form: FormData) => {
     setSaving(true); setError("");
     try {
+      const payload = { ...form, client_id: form.client_id ? Number(form.client_id) : undefined };
       const res = await fetch("/api/admin/quotations", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Failed"); }
       await load();
@@ -566,8 +595,9 @@ export function QuotationsManager() {
     if (!selected) return;
     setSaving(true); setError("");
     try {
+      const payload = { ...form, client_id: form.client_id ? Number(form.client_id) : undefined };
       const res = await fetch(`/api/admin/quotations/${selected.id}`, {
-        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form),
+        method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
       });
       if (!res.ok) { const d = await res.json(); throw new Error(d.error ?? "Failed"); }
       await load();
@@ -617,7 +647,7 @@ export function QuotationsManager() {
           <h2 className="text-xl font-bold text-white">New Quotation</h2>
         </div>
         {error && <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>}
-        <QuotationForm onSave={handleCreate} onCancel={() => setView("list")} saving={saving} />
+        <QuotationForm clients={clients} onSave={handleCreate} onCancel={() => setView("list")} saving={saving} />
       </div>
     );
   }
@@ -632,7 +662,7 @@ export function QuotationsManager() {
           <h2 className="text-xl font-bold text-white">Edit {selected.quote_no}</h2>
         </div>
         {error && <div className="mb-4 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">{error}</div>}
-        <QuotationForm initial={selected} onSave={handleEdit} onCancel={() => setView("list")} saving={saving} />
+        <QuotationForm clients={clients} initial={selected} onSave={handleEdit} onCancel={() => setView("list")} saving={saving} />
       </div>
     );
   }
