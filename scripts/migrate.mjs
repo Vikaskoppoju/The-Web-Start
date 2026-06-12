@@ -16,6 +16,7 @@ const migrations = [
   "migrations/002_dashboards.sql",
   "migrations/003_quotations.sql",
   "migrations/004_phonepe.sql",
+  "migrations/005_razorpay.sql",
 ];
 
 async function run() {

@@ -2,7 +2,7 @@
 const nextConfig = {
   compress: true,
 
-  serverExternalPackages: ["@libsql/client", "bcryptjs", "@react-pdf/renderer"],
+  serverExternalPackages: ["@libsql/client", "bcryptjs", "@react-pdf/renderer", "razorpay"],
 
   images: {
     formats: ["image/avif", "image/webp"],

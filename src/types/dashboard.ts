@@ -125,7 +125,7 @@ export interface InvoiceWithClient extends Invoice {
 
 // ── Payment ────────────────────────────────────────────────────────────────────
 export type PaymentMethod =
-  | "bank_transfer" | "upi" | "razorpay" | "stripe" | "cash" | "cheque" | "phonepe";
+  | "bank_transfer" | "upi" | "razorpay" | "stripe" | "cash" | "cheque";
 export type PaymentStatus = "pending" | "completed" | "failed" | "refunded";
 
 export interface Payment {

@@ -42,8 +42,33 @@ function PaymentBanner() {
   );
 }
 
+// ── Razorpay loader ────────────────────────────────────────────────────────────
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Razorpay: any;
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && window.Razorpay) { resolve(true); return; }
+    const s  = document.createElement("script");
+    s.src    = "https://checkout.razorpay.com/v1/checkout.js";
+    s.onload = () => resolve(true);
+    s.onerror = () => resolve(false);
+    document.body.appendChild(s);
+  });
+}
+
 // ── Pay Now button ─────────────────────────────────────────────────────────────
-function PayNowButton({ invoiceId, balance, currency }: { invoiceId: string; balance: number; currency: string }) {
+function PayNowButton({
+  invoiceId, invoiceNo, balance, currency, clientEmail,
+  onSuccess,
+}: {
+  invoiceId: string; invoiceNo: string; balance: number; currency: string;
+  clientEmail?: string; onSuccess: () => void;
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
 
@@ -52,12 +77,54 @@ function PayNowButton({ invoiceId, balance, currency }: { invoiceId: string; bal
   const handlePay = async () => {
     setLoading(true); setError("");
     try {
+      const loaded = await loadRazorpayScript();
+      if (!loaded) { setError("Could not load payment gateway. Check your connection."); return; }
+
       const res  = await fetch(`/api/client/pay/${invoiceId}`, { method: "POST" });
       const data = await res.json();
-      if (!data.success) { setError(data.error ?? "Payment initiation failed"); return; }
-      window.location.href = data.data.redirectUrl;
-    } catch { setError("Network error. Try again."); }
-    finally { setLoading(false); }
+      if (!data.success) { setError(data.error ?? "Failed to create order"); return; }
+
+      const { orderId, amount, currency: cur, keyId, invoiceNo: invNo } = data.data;
+
+      const rzp = new window.Razorpay({
+        key:         keyId,
+        amount,
+        currency:    cur,
+        order_id:    orderId,
+        name:        "The Web Start",
+        description: `Invoice ${invNo ?? invoiceNo}`,
+        image:       "/icon.svg",
+        prefill:     { email: clientEmail ?? "" },
+        theme:       { color: "#7c3aed" },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          const verifyRes  = await fetch("/api/payments/razorpay/verify", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ ...response, invoiceId: Number(invoiceId) }),
+          });
+          const verifyData = await verifyRes.json();
+          if (verifyData.success) {
+            onSuccess();
+          } else {
+            setError(verifyData.error ?? "Payment verification failed");
+          }
+        },
+        modal: {
+          ondismiss: () => setLoading(false),
+        },
+      });
+
+      rzp.on("payment.failed", (resp: { error: { description: string } }) => {
+        setError(resp.error?.description ?? "Payment failed");
+        setLoading(false);
+      });
+
+      rzp.open();
+    } catch { setError("Something went wrong. Try again."); setLoading(false); }
   };
 
   return (
@@ -66,10 +133,10 @@ function PayNowButton({ invoiceId, balance, currency }: { invoiceId: string; bal
         className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-sm text-white transition-all disabled:opacity-60"
         style={{ background: loading ? "#4b2d8f" : "linear-gradient(135deg,#7c3aed,#06b6d4)" }}>
         {loading
-          ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
-          : <><CreditCard className="w-4 h-4" /> Pay {currency} {balance.toLocaleString()} via PhonePe</>}
+          ? <><Loader2 className="w-4 h-4 animate-spin" /> Opening payment…</>
+          : <><CreditCard className="w-4 h-4" /> Pay {currency} {balance.toLocaleString()}</>}
       </button>
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
     </div>
   );
 }
@@ -80,6 +147,8 @@ function InvoiceDetailContent() {
   const invoiceId = typeof params?.id === "string" ? params.id : undefined;
   const [invoice, setInvoice]  = useState<(InvoiceWithClient & { items: InvoiceItem[]; payments: Payment[] }) | null>(null);
   const [loading, setLoading]  = useState(true);
+
+  const [paid, setPaid] = useState(false);
 
   const load = useCallback(async () => {
     if (!invoiceId) return;
@@ -139,8 +208,19 @@ function InvoiceDetailContent() {
                   ))}
                 </div>
                 {/* Pay Now */}
-                {canPay && invoiceId && (
-                  <PayNowButton invoiceId={invoiceId} balance={balance} currency={invoice.currency} />
+                {canPay && invoiceId && !paid && (
+                  <PayNowButton
+                    invoiceId={invoiceId}
+                    invoiceNo={invoice.invoice_no}
+                    balance={balance}
+                    currency={invoice.currency}
+                    onSuccess={() => { setPaid(true); load(); }}
+                  />
+                )}
+                {paid && (
+                  <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold">
+                    <CheckCircle className="w-4 h-4" /> Payment successful!
+                  </div>
                 )}
               </div>
 
@@ -227,7 +307,7 @@ function InvoiceDetailContent() {
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         <div>
                           <div className="text-sm font-semibold text-white capitalize">
-                            {payment.method === "phonepe" ? "PhonePe" : payment.method.replace(/_/g, " ")}
+                            {payment.method === "razorpay" ? "Razorpay" : payment.method.replace(/_/g, " ")}
                           </div>
                           <div className="text-xs text-gray-500">
                             {new Date(payment.payment_date).toLocaleDateString()}
