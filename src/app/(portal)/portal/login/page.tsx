@@ -61,7 +61,11 @@ export default function PortalLoginPage() {
         <Suspense fallback={<div className="glass-strong rounded-2xl p-8 border border-white/10 h-64 animate-pulse" />}>
           <PortalLoginForm />
         </Suspense>
-        <p className="text-center text-gray-700 text-xs mt-4"><Link href="/" className="hover:text-gray-500 transition-colors">← Back to website</Link></p>
+        <p className="text-center text-gray-500 text-sm mt-5">
+          Don&apos;t have an account?{" "}
+          <Link href="/portal/register" className="text-purple-400 hover:text-purple-300 transition-colors">Create one</Link>
+        </p>
+        <p className="text-center text-gray-700 text-xs mt-3"><Link href="/" className="hover:text-gray-500 transition-colors">← Back to website</Link></p>
       </m.div>
     </div>
   );

@@ -8,6 +8,8 @@ export const config = {
     "/api/admin/:path*",
     "/dashboard/:path*",
     "/api/client/:path*",
+    // PhonePe routes are public (webhook + redirect) — excluded via the
+    // early-return in the middleware body below
   ],
 };
 
