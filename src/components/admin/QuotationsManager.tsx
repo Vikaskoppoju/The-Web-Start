@@ -134,144 +134,167 @@ function PrintPreview({ quote }: { quote: QuotationWithItems }) {
       </div>
 
       {/* Printable area */}
-      <div id="quote-print-area"
-        className="bg-white rounded-xl overflow-hidden text-gray-900 text-sm print-page">
-        {/* Header */}
-        <div className="p-8 pb-6"
-          style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)" }}>
-          <div className="flex justify-between items-start gap-4">
-            <div className="flex items-center gap-4">
-              <LogoMark className="h-12 w-12" />
-              <div>
-                <div className="text-2xl font-bold text-white mb-1">THE WEB START</div>
-                <div className="text-purple-300 text-xs">thewebstart.in · info@thewebstart.in</div>
-              </div>
+      <div id="quote-print-area" className="bg-white rounded-xl overflow-hidden text-gray-900 font-sans">
+
+        {/* ── Header bar ── */}
+        <div className="flex justify-between items-start px-8 py-6 gap-6" style={{ background: "#0f0f23" }}>
+          <div className="flex items-center gap-3">
+            <LogoMark className="w-10 h-10 flex-shrink-0" />
+            <div>
+              <div className="text-lg font-bold text-white tracking-widest">THE WEB START</div>
+              <div className="text-[11px] text-purple-400 mt-0.5">thewebstart.in · info@thewebstart.in</div>
             </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-white mb-1">{quote.quote_no}</div>
-              <div className="text-xs text-cyan-300 uppercase tracking-wider">{quote.title}</div>
-              <div className="mt-2 text-xs text-gray-300">
-                {quote.valid_until && <div>Valid until: {quote.valid_until}</div>}
-                <div className="mt-1">
-                  <span className="inline-block px-2 py-0.5 rounded-full text-xs font-medium"
-                    style={{ background: quote.status === "accepted" ? "#10b981" : quote.status === "rejected" ? "#ef4444" : "#7c3aed", color: "#fff" }}>
-                    {quote.status.toUpperCase()}
-                  </span>
-                </div>
-              </div>
-            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-white">{quote.quote_no}</div>
+            <div className="text-[10px] text-purple-400 uppercase tracking-widest mt-1">{quote.title}</div>
+            <span className="inline-block mt-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase text-white"
+              style={{ background: quote.status === "accepted" ? "#059669" : quote.status === "rejected" ? "#dc2626" : quote.status === "sent" ? "#2563eb" : "#7c3aed" }}>
+              {quote.status}
+            </span>
           </div>
         </div>
 
-        {/* Parties */}
-        <div className="px-8 py-5 grid grid-cols-2 gap-8 border-b border-gray-100">
-          <div>
-            <div className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">From</div>
-            <div className="font-semibold text-gray-900">The Web Start</div>
-            <div className="text-gray-600 text-xs mt-1">info@thewebstart.in</div>
-          </div>
-          <div>
-            <div className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">Prepared For</div>
-            <div className="font-semibold text-gray-900">{quote.client_name}</div>
-            {quote.client_company && <div className="text-gray-700 text-xs">{quote.client_company}</div>}
-            {quote.client_email && <div className="text-gray-500 text-xs">{quote.client_email}</div>}
-            {quote.client_phone && <div className="text-gray-500 text-xs">{quote.client_phone}</div>}
-            {quote.client_address && <div className="text-gray-500 text-xs mt-1">{quote.client_address}</div>}
-          </div>
+        {/* Accent strip */}
+        <div className="h-[3px]" style={{ background: "#7c3aed" }} />
+
+        {/* ── Meta row ── */}
+        <div className="flex gap-10 px-8 py-3 bg-gray-50 border-b border-gray-100 text-xs">
+          {[
+            ["Issue Date", (quote.created_at ?? "").split("T")[0]],
+            ["Valid Until", quote.valid_until ?? "—"],
+            ["Currency", quote.currency],
+            ["GST Rate", `${quote.tax_percent}%`],
+          ].map(([label, value]) => (
+            <div key={label}>
+              <div className="text-gray-400 uppercase tracking-wider text-[9px] mb-0.5">{label}</div>
+              <div className="font-semibold text-gray-900 text-xs">{value}</div>
+            </div>
+          ))}
         </div>
 
-        {/* Items table */}
+        {/* ── Parties ── */}
+        <div className="grid grid-cols-2 gap-4 px-8 py-5 border-b border-gray-100">
+          {[
+            {
+              label: "From",
+              name: "The Web Start",
+              lines: ["info@thewebstart.in", "www.thewebstart.in"],
+            },
+            {
+              label: "Prepared For",
+              name: quote.client_name,
+              lines: [
+                quote.client_company,
+                quote.client_email,
+                quote.client_phone,
+                quote.client_address,
+              ].filter(Boolean) as string[],
+            },
+          ].map(p => (
+            <div key={p.label} className="border border-gray-100 rounded-lg p-4">
+              <div className="text-[9px] font-bold text-purple-600 uppercase tracking-widest border-b border-purple-100 pb-2 mb-3">{p.label}</div>
+              <div className="font-semibold text-gray-900 text-sm mb-1">{p.name}</div>
+              {p.lines.map((l, i) => <div key={i} className="text-xs text-gray-500 leading-5">{l}</div>)}
+            </div>
+          ))}
+        </div>
+
+        {/* ── Items table ── */}
         <div className="px-8 py-5">
-          <table className="w-full">
+          <table className="w-full text-sm">
             <thead>
-              <tr>
-                <th className="text-left py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide rounded-l-lg w-6">#</th>
-                <th className="text-left py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide">Service / Description</th>
-                <th className="text-right py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide">Qty</th>
-                <th className="text-right py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide">Unit Price</th>
-                <th className="text-right py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide">Disc%</th>
-                <th className="text-right py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide">GST%</th>
-                <th className="text-right py-2.5 px-3 bg-gray-50 text-xs text-gray-500 font-semibold uppercase tracking-wide rounded-r-lg">Amount</th>
+              <tr style={{ background: "#0f0f23" }} className="rounded-lg">
+                <th className="text-left text-[9px] font-bold text-white uppercase tracking-wider py-2.5 pl-3 pr-2 rounded-l-lg w-7">#</th>
+                <th className="text-left text-[9px] font-bold text-white uppercase tracking-wider py-2.5 px-2">Service / Description</th>
+                <th className="text-right text-[9px] font-bold text-white uppercase tracking-wider py-2.5 px-2 w-10">Qty</th>
+                <th className="text-right text-[9px] font-bold text-white uppercase tracking-wider py-2.5 px-2 w-12">Unit</th>
+                <th className="text-right text-[9px] font-bold text-white uppercase tracking-wider py-2.5 px-2 w-24">Unit Price</th>
+                <th className="text-right text-[9px] font-bold text-white uppercase tracking-wider py-2.5 px-2 w-12">Disc%</th>
+                <th className="text-right text-[9px] font-bold text-white uppercase tracking-wider py-2.5 px-2 w-12">GST%</th>
+                <th className="text-right text-[9px] font-bold text-white uppercase tracking-wider py-2.5 pl-2 pr-3 rounded-r-lg w-24">Amount</th>
               </tr>
             </thead>
             <tbody>
               {items.length ? items.map((item, i) => (
-                <tr key={item.id ?? i} className={cn(i % 2 === 1 && "bg-gray-50/50")}>
-                  <td className="py-3 px-3 text-gray-400 text-xs align-top">{i + 1}</td>
-                  <td className="py-3 px-3">
-                    <div className="font-semibold text-gray-900 text-sm">{item.service}</div>
+                <tr key={item.id ?? i} className={cn("border-b border-gray-100", i % 2 === 1 && "bg-gray-50/60")}>
+                  <td className="py-3 pl-3 pr-2 text-gray-400 text-xs align-top">{i + 1}</td>
+                  <td className="py-3 px-2 align-top">
+                    <div className="font-semibold text-gray-900 text-[13px] leading-tight">{item.service}</div>
                     {item.description && (
-                      <ul className="mt-1 space-y-0.5">
+                      <ul className="mt-1.5 space-y-0.5">
                         {item.description.split("\n").filter(Boolean).map((d, di) => (
-                          <li key={di} className="text-gray-500 text-xs flex gap-1.5">
-                            <span className="text-purple-400 mt-0.5">•</span> {d}
+                          <li key={di} className="text-[11px] text-gray-500 flex gap-1.5 leading-relaxed">
+                            <span className="text-purple-500 mt-px">•</span>
+                            {d.replace(/^\s*[-•‣]\s*/, "")}
                           </li>
                         ))}
                       </ul>
                     )}
                   </td>
-                  <td className="py-3 px-3 text-right text-gray-700 text-xs align-top">{item.quantity} <span className="text-gray-400">{item.unit}</span></td>
-                  <td className="py-3 px-3 text-right text-gray-700 text-xs align-top">{fmt(item.unit_price, quote.currency)}</td>
-                  <td className="py-3 px-3 text-right text-gray-500 text-xs align-top">{item.discount_percent > 0 ? `${item.discount_percent}%` : "—"}</td>
-                  <td className="py-3 px-3 text-right text-gray-500 text-xs align-top">{item.tax_percent > 0 ? `${item.tax_percent}%` : "—"}</td>
-                  <td className="py-3 px-3 text-right font-semibold text-gray-900 text-sm align-top">{fmt(item.amount, quote.currency)}</td>
+                  <td className="py-3 px-2 text-right text-xs text-gray-700 align-top">{item.quantity}</td>
+                  <td className="py-3 px-2 text-right text-xs text-gray-500 align-top">{item.unit}</td>
+                  <td className="py-3 px-2 text-right text-xs text-gray-700 align-top">{fmt(item.unit_price, quote.currency)}</td>
+                  <td className="py-3 px-2 text-right text-xs text-gray-500 align-top">{item.discount_percent > 0 ? `${item.discount_percent}%` : "—"}</td>
+                  <td className="py-3 px-2 text-right text-xs text-gray-500 align-top">{item.tax_percent > 0 ? `${item.tax_percent}%` : "—"}</td>
+                  <td className="py-3 pl-2 pr-3 text-right font-bold text-gray-900 text-sm align-top">{fmt(item.amount, quote.currency)}</td>
                 </tr>
               )) : (
-                <tr>
-                  <td colSpan={7} className="py-10 text-center text-sm text-gray-500">No line items found for this quotation.</td>
-                </tr>
+                <tr><td colSpan={8} className="py-10 text-center text-sm text-gray-400">No line items.</td></tr>
               )}
             </tbody>
           </table>
         </div>
 
-        {/* Totals */}
+        {/* ── Totals ── */}
         <div className="px-8 pb-6 flex justify-end">
-          <div className="w-72 space-y-2">
-            <div className="flex justify-between text-sm text-gray-600 py-1 border-b border-gray-100">
-              <span>Subtotal</span><span className="font-medium">{fmt(subtotal, quote.currency)}</span>
+          <div className="w-64 space-y-1.5">
+            <div className="flex justify-between text-xs text-gray-500 py-1.5 border-b border-gray-100">
+              <span>Subtotal</span><span className="font-medium text-gray-800">{fmt(subtotal, quote.currency)}</span>
             </div>
             {discountAmount > 0 && (
-              <div className="flex justify-between text-sm text-emerald-600 py-1 border-b border-gray-100">
+              <div className="flex justify-between text-xs py-1.5 border-b border-gray-100 text-emerald-600">
                 <span>Discount {quote.discount_type === "percent" ? `(${quote.discount_value}%)` : "(fixed)"}</span>
-                <span>- {fmt(discountAmount, quote.currency)}</span>
+                <span className="font-medium">− {fmt(discountAmount, quote.currency)}</span>
               </div>
             )}
             {taxAmount > 0 && (
-              <div className="flex justify-between text-sm text-gray-600 py-1 border-b border-gray-100">
-                <span>GST ({quote.tax_percent}%)</span><span>{fmt(taxAmount, quote.currency)}</span>
+              <div className="flex justify-between text-xs text-gray-500 py-1.5 border-b border-gray-100">
+                <span>GST ({quote.tax_percent}%)</span><span className="font-medium text-gray-800">{fmt(taxAmount, quote.currency)}</span>
               </div>
             )}
-            <div className="flex justify-between py-3 px-4 rounded-xl mt-1"
-              style={{ background: "linear-gradient(135deg,#7c3aed20,#06b6d420)", border: "1px solid #7c3aed30" }}>
-              <span className="font-bold text-gray-900 text-base">Total</span>
-              <span className="font-bold text-purple-700 text-xl">{fmt(total, quote.currency)}</span>
+            <div className="flex justify-between items-center px-4 py-3 rounded-xl mt-2" style={{ background: "#0f0f23" }}>
+              <span className="text-sm font-bold text-purple-400 tracking-wider uppercase">Total</span>
+              <span className="text-xl font-bold text-white">{fmt(total, quote.currency)}</span>
             </div>
           </div>
         </div>
 
-        {/* Terms / Notes */}
+        {/* ── Terms / Notes ── */}
         {(quote.terms || quote.notes) && (
-          <div className="px-8 pb-8 grid grid-cols-2 gap-6">
+          <div className={cn("px-8 pb-8 grid gap-4", quote.terms && quote.notes ? "grid-cols-2" : "grid-cols-1")}>
             {quote.terms && (
-              <div>
-                <div className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">Terms & Conditions</div>
-                <div className="text-xs text-gray-600 whitespace-pre-line">{quote.terms}</div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <div className="text-[9px] font-bold text-purple-600 uppercase tracking-widest border-b border-purple-100 pb-2 mb-3">Terms & Conditions</div>
+                <div className="text-[11px] text-gray-600 whitespace-pre-line leading-relaxed">{quote.terms}</div>
               </div>
             )}
             {quote.notes && (
-              <div>
-                <div className="text-xs font-semibold text-purple-600 uppercase tracking-wider mb-2">Additional Notes</div>
-                <div className="text-xs text-gray-600 whitespace-pre-line">{quote.notes}</div>
+              <div className="border border-gray-100 rounded-lg p-4">
+                <div className="text-[9px] font-bold text-purple-600 uppercase tracking-widest border-b border-purple-100 pb-2 mb-3">Additional Notes</div>
+                <div className="text-[11px] text-gray-600 whitespace-pre-line leading-relaxed">{quote.notes}</div>
               </div>
             )}
           </div>
         )}
 
-        {/* Footer */}
-        <div className="px-8 py-4 border-t border-gray-100 flex justify-between items-center text-xs text-gray-400">
-          <span>Generated by The Web Start — thewebstart.in</span>
-          <span>Thank you for your business!</span>
+        {/* ── Footer ── */}
+        <div className="px-8 py-3 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <LogoMark className="w-5 h-5" />
+            <span className="text-[10px] text-gray-400">The Web Start · thewebstart.in</span>
+          </div>
+          <span className="text-[10px] text-gray-400">Thank you for your business!</span>
         </div>
       </div>
     </div>
@@ -608,6 +631,7 @@ export function QuotationsManager() {
   const [view, setView] = useState<View>("list");
   const [selected, setSelected] = useState<QuotationWithItems | null>(null);
   const [saving, setSaving] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [error, setError] = useState("");
@@ -694,6 +718,56 @@ export function QuotationsManager() {
     if (!res.ok) { alert(data.error ?? "Failed"); return; }
     alert(`Invoice ${data.data?.invoiceNo} created!`);
     await load();
+  };
+
+  const handleDuplicate = async (id: number) => {
+    if (!confirm("Duplicate this quotation? A new draft copy will be created.")) return;
+    setDuplicating(true);
+    try {
+      const quote = await loadDetail(id);
+      const payload = {
+        client_id: quote.client_id,
+        client_name: quote.client_name,
+        client_email: quote.client_email,
+        client_phone: quote.client_phone,
+        client_company: quote.client_company,
+        client_address: quote.client_address,
+        title: quote.title,
+        valid_until: quote.valid_until,
+        currency: quote.currency,
+        discount_type: quote.discount_type,
+        discount_value: quote.discount_value,
+        tax_percent: quote.tax_percent,
+        terms: quote.terms,
+        notes: quote.notes,
+        items: quote.items.map((item) => ({
+          service: item.service,
+          description: item.description,
+          quantity: item.quantity,
+          unit: item.unit,
+          unit_price: item.unit_price,
+          discount_percent: item.discount_percent,
+          tax_percent: item.tax_percent,
+          amount: item.amount,
+        })),
+      };
+      const res = await fetch("/api/admin/quotations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error ?? "Failed to duplicate quotation");
+      }
+      await load();
+      alert(`Quotation duplicated as ${data.quoteNo ?? "new quotation"}.`);
+    } catch (error) {
+      console.error(error);
+      alert((error as Error).message || "Quotation duplication failed.");
+    } finally {
+      setDuplicating(false);
+    }
   };
 
   const filtered = quotations.filter(q => {
@@ -871,6 +945,11 @@ export function QuotationsManager() {
                             <ArrowRight className="w-4 h-4" />
                           </button>
                         )}
+                        <button onClick={() => handleDuplicate(q.id)}
+                          disabled={duplicating}
+                          title="Duplicate quotation" className="p-1.5 text-gray-500 hover:text-indigo-400 disabled:opacity-50 transition-colors rounded-lg hover:bg-indigo-500/10">
+                          <Copy className="w-4 h-4" />
+                        </button>
                         <button onClick={() => handleDelete(q.id)}
                           title="Delete" className="p-1.5 text-gray-500 hover:text-red-400 transition-colors rounded-lg hover:bg-red-500/10">
                           <Trash2 className="w-4 h-4" />
