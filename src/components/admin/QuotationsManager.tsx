@@ -1,24 +1,27 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { m, AnimatePresence } from "framer-motion";
 import {
   Plus, Search, Eye, Edit2, Trash2, FileText, Send,
-  CheckCircle, XCircle, Clock, Download, ChevronDown,
-  ChevronUp, X, Save, Printer, ArrowRight, Copy,
+  CheckCircle, XCircle, X, Save, Printer, ArrowRight, Copy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Input, Select } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Input";
 import { StatusBadge } from "./StatusBadge";
-import { pdf } from "@react-pdf/renderer";
-import { QuotationPdfDocument } from "@/components/admin/QuotationPdfDocument";
+// react-pdf is loaded lazily to keep the initial bundle small
+async function generatePdfBlob(quote: QuotationWithItems): Promise<Blob> {
+  const [{ pdf }, { QuotationPdfDocument }] = await Promise.all([
+    import("@react-pdf/renderer"),
+    import("@/components/admin/QuotationPdfDocument"),
+  ]);
+  return pdf(<QuotationPdfDocument quote={quote} />).toBlob();
+}
 import type { Quotation, QuotationWithItems, CreateQuotationItem, QuotationStatus } from "@/types/quotation";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
 const fmt = (n: number | null | undefined, currency = "INR") =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: currency ?? "INR", minimumFractionDigits: 0 }).format(n ?? 0);
 
-const today = () => new Date().toISOString().split("T")[0];
 const inDays = (days: number) => new Date(Date.now() + days * 86400000).toISOString().split("T")[0];
 
 const UNIT_OPTIONS = ["project", "hour", "day", "month", "unit"];
@@ -77,7 +80,7 @@ function PrintPreview({ quote }: { quote: QuotationWithItems }) {
     setGeneratingPdf(true);
 
     try {
-      const blob = await pdf(<QuotationPdfDocument quote={quote} />).toBlob();
+      const blob = await generatePdfBlob(quote);
       const url = URL.createObjectURL(blob);
       const anchor = document.createElement("a");
       anchor.href = url;
@@ -98,7 +101,7 @@ function PrintPreview({ quote }: { quote: QuotationWithItems }) {
     setPreviewingPdf(true);
 
     try {
-      const blob = await pdf(<QuotationPdfDocument quote={quote} />).toBlob();
+      const blob = await generatePdfBlob(quote);
       const url = URL.createObjectURL(blob);
       const win = window.open(url, "_blank");
       if (!win) {
